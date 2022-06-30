@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package rpc;
+
+message RPCState {
+  string state = 1;
+}
+
+service UserService {
+  rpc createAccount (AccountDetails) returns (RPCState);
+  rpc changePassword (AccountDetails) returns (RPCState);
+  rpc setAccess (AccountAccess) returns (RPCState);
+  rpc getAccountInfo (Account) returns (AccountInfo);
+  rpc disableAccount (Account) returns (RPCState);
+  rpc enableAccount (Account) returns (RPCState);
+}
+
+message Account {
+  string login = 1;
+}
+
+message AccountInfo {
+  string login = 1;
+  string accessLevel = 2;
+  bool canLogin = 3;
+}
+
+message AccountAccess {
+  string login = 1;
+  string accessLevel = 2;
+}
+
+message AccountDetails {
+  string login = 1;
+  string password = 2;
+  optional string accessLevel = 3;
+}
+
+service ResourceEditorService {
+  rpc buildDatabase (BuildDatabaseInfo) returns (stream REInfo);
+  rpc addLocale (BuildLocaleInfo) returns (stream REInfo);
+
+  rpc applyPatch (PatchInfo) returns (stream REInfo);
+  rpc preparePatch (PatchInfo) returns (stream REInfo);
+  rpc revokePatch (VersionInfo) returns (REInfo);
+
+  rpc buildVersion (VersionInfo) returns (stream REInfo);
+  rpc buildCurrentRelease (Empty) returns (stream REInfo);
+  rpc buildReleaseCandidate (Empty) returns (stream REInfo);
+  rpc buildLocale (LocaleInfo) returns (REInfo);
+}
+
+message Empty {}
+
+enum ProgressAction {
+  START = 0;
+  STOP = 1;
+  INC = 2;
+  SET = 3;
+}
+
+message ProgressBar {
+  ProgressAction action = 1;
+  optional int32 max = 2;
+  optional int32 current = 3; 
+}
+
+message ProgressSpinner {
+  ProgressAction action = 1;
+}
+
+message Progress {
+  oneof progress {
+    ProgressBar progressBar = 1;
+    ProgressSpinner spinner = 2;
+  }
+}
+
+message REInfo {
+  string info = 1;
+  optional Progress progress = 2;
+}
+
+message BuildDatabaseInfo {
+  string fullPathToServerDataFolder = 1;
+}
+
+message BuildLocaleInfo {
+  string regionName = 1;
+  string fullPathToData = 2;
+}
+
+message PatchInfo {
+  string patchJson = 1;
+}
+
+message VersionInfo {
+  int32 versionId = 1;
+}
+
+message LocaleInfo {
+  string regionName = 1;
+  optional int32 versionId = 2;
+}
